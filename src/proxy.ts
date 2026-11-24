@@ -2,8 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 /**
  * In-memory rate limiter (per Vercel serverless instance).
- * Not perfect for distributed deploys but adds a solid baseline defence.
- * For tighter control, use Vercel Edge Config / KV or Upstash Redis.
+ * Adds a baseline defense against rapid request flooding.
  */
 const hits = new Map<string, { count: number; reset: number }>();
 
@@ -18,7 +17,7 @@ function rateLimit(ip: string, windowMs = 60_000, max = 60): boolean {
   return entry.count <= max;
 }
 
-// Clean up stale entries every 5 minutes to prevent memory leak
+// Clean up stale entries periodically
 setInterval(() => {
   const now = Date.now();
   for (const [key, val] of hits) {
@@ -26,12 +25,11 @@ setInterval(() => {
   }
 }, 300_000);
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
 
   // Rate limit API routes (60 requests per minute per IP)
   if (request.nextUrl.pathname.startsWith("/api/")) {
-    // Stricter limit for admin routes
     const isAdmin = request.nextUrl.pathname.startsWith("/api/admin");
     const allowed = rateLimit(
       `${ip}:${isAdmin ? "admin" : "api"}`,
@@ -48,6 +46,8 @@ export function middleware(request: NextRequest) {
 
   return NextResponse.next();
 }
+
+export default proxy;
 
 export const config = {
   matcher: ["/api/:path*"],

@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
   /* React strict mode for catching common bugs in development */
   reactStrictMode: true,
 
-  /* Security headers applied to all routes */
+  /* Security headers applied to all routes (with Google AdSense & Analytics support) */
   async headers() {
     return [
       {
@@ -15,7 +15,7 @@ const nextConfig: NextConfig = {
         headers: [
           { key: "X-DNS-Prefetch-Control", value: "on" },
           { key: "X-Content-Type-Options", value: "nosniff" },
-          { key: "X-Frame-Options", value: "DENY" },
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
           { key: "X-XSS-Protection", value: "1; mode=block" },
           {
             key: "Strict-Transport-Security",
@@ -24,19 +24,19 @@ const nextConfig: NextConfig = {
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           {
             key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=(), browsing-topics=()",
+            value: "camera=(), microphone=(), geolocation=()",
           },
           {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:",
-              "style-src 'self' 'unsafe-inline'",
-              "img-src 'self' data: blob:",
-              "font-src 'self'",
-              "connect-src 'self'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://pagead2.googlesyndication.com https://*.google.com https://*.googlesyndication.com https://*.google-analytics.com https://adservice.google.com",
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+              "img-src 'self' data: blob: https://*.googlesyndication.com https://*.google.com https://*.google-analytics.com",
+              "font-src 'self' https://fonts.gstatic.com",
+              "connect-src 'self' https://*.google.com https://*.googlesyndication.com https://*.google-analytics.com",
               "worker-src 'self' blob:",
-              "frame-ancestors 'none'",
+              "frame-src 'self' https://googleads.g.doubleclick.net https://*.googlesyndication.com https://*.google.com",
               "base-uri 'self'",
               "form-action 'self'",
             ].join("; "),
